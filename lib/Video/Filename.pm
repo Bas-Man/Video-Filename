@@ -7,6 +7,8 @@ package Video::Filename;
 use strict;
 require Exporter;
 
+use 5.010;
+
 use Debug::Simple;
 use Data::Dumper::Simple;
 use Term::ANSIColor qw(:constants);
@@ -15,7 +17,7 @@ $Term::ANSIColor::AUTORESET = 1;
 
 use vars qw($VERSION @filePatterns);
 
-$VERSION = "0.30";
+$VERSION = "0.31";
 
 @filePatterns = (
     {
@@ -96,6 +98,13 @@ $VERSION = "0.30";
             ['Series Name.E02-03.Episode_name.avi', 'Series Name', undef, 2, 3, undef, undef, 'Episode_name', 'avi'],
             ['Series Name.E02-E03.Episode_name.avi', 'Series Name', undef, 2, 3, undef, undef, 'Episode_name', 'avi'],
         ],
+    },
+    {
+        re => '^(?<movie>.*)$',
+        test => [
+            ['Movie.mov', 'Movie', undef, undef, undef, undef, undef, undef, 'mov'],
+        ],
+        #warning => 'Found year instead of season+episode',
     },
 );
     

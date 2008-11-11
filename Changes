@@ -1,5 +1,9 @@
-Revision history for Video-Filename
+Revision history for Video::Filename
 
-0.01    Date/time
+0.31    2008.11.10 20:01:39
+        Add a final rule which assumes filenames not matched by the others is
+            considered a movie.
+
+0.30    2008.11.06 01:20:17
         First version, released on an unsuspecting world.
 
