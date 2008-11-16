@@ -1,7 +1,5 @@
 Video-Filename
 
-Video::Filename requires a minimum version of perl 5.10
-
 This module parses information about a video file from the filename.  Things
 like name/season/episode/episode_name/extension for TV shows, and name/date for
 movies.

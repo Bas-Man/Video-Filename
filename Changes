@@ -1,5 +1,15 @@
 Revision history for Video::Filename
 
+0.32    2008.11.16 10:32:46
+        Remove reliance on perl v5.10
+        Add regex patterns which don't rely on named groups
+        Add list of keys from new regex patterns
+        Take care of look-behind regex for roman numerals in perl <5.10
+        Approximate named groups in perl <5.10 using re_compat and re_keys
+        Fix code indentation
+        Add convenience SnnEnn entry as 'seasonepisode'
+        With contributions to the above from Justin Pulsipher
+
 0.31    2008.11.10 20:01:39
         Add a final rule which assumes filenames not matched by the others is
             considered a movie.
