@@ -10,7 +10,6 @@ WriteMakefile(
     PL_FILES            => {},
     PREREQ_PM => {
         'Test::More' => 0,
-        'Data::Dumper::Simple' => 0,
         'Debug::Simple' => 0,
         'Text::Roman' => 0,
     },

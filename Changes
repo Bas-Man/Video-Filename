@@ -1,5 +1,15 @@
 Revision history for Video::Filename
 
+0.33    2008.12.19 16:02:43
+        Add DxxExx parsing support for DVD episode numbering
+        Add IMDB number partsing support
+        Rewrite the tests and test engine so it can support DVD/IMDB testcases
+        Add support for english numbers for DVD/Season/Episode numbers
+        Add guess-name/guess-movie for names which span multiple directory/subs
+        Add seasonepisode support for DVDs
+        Add prefix support for _allnum2int()
+        Add _allroman2int()
+
 0.32    2008.11.16 10:32:46
         Remove reliance on perl v5.10
         Add regex patterns which don't rely on named groups

@@ -15,10 +15,41 @@ $Term::ANSIColor::AUTORESET = 1;
 
 use vars qw($VERSION @filePatterns);
 
-$VERSION = "0.32";
+$VERSION = "0.33";
 
 @filePatterns = (
-	{
+	{ # DVD Episode Support - DddEee
+		# Perl > v5.10
+		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(?<dvd>\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(?<episode>\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
+
+		# Perl < v5.10
+		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
+		keys_compat => [qw(name dvd episode endep part subep epname)],
+
+		test_keys => [qw(filename name dvd episode endep part subep epname ext)],
+		test => [
+			['D01E02.Episode_name.avi', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.D01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/D01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/D01E02/Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.D01E02a.Episode_name.avi', 'Series Name', 1, 2, undef, undef, 'a', 'Episode_name', 'avi'],
+			['Series Name.D01E02p4.Episode_name.avi', 'Series Name', 1, 2, undef, 4, undef, 'Episode_name', 'avi'],
+			['Series Name.D01E02-03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.D01E02-E03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.D01E02E.03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/D01E02E03/Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['D01E02E03/Episode name.avi', undef, 1, 2, 3, undef, undef, 'Episode name', 'avi'],
+			['Series Name.DVD_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.disk_V.Episode_XI.Episode_name.avi', 'Series Name', 5, 11, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.disc_V.Episode_XI.Part.XXV.Episode_name.avi', 'Series Name', 5, 11, undef, 25, undef, 'Episode_name', 'avi'],
+			['Series Name.DVD01.Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/dvd_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/disk_01/Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/D.I/Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/D three/Ep five Episode_name.avi', 'Series Name', 3, 5, undef, undef, undef, 'Episode_name', 'avi'],
+		],
+	},
+	{ # TV Show Support - SssEee
 		# Perl > v5.10
 		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:(?:s|se|season|series)[\s._]?)?(?<season>\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(?<episode>\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
 
@@ -26,28 +57,60 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:(?:s|se|season|series)[\s._]?)?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season episode endep part subep epname)],
 
+		test_keys => [qw(filename name guess-name season episode endep part subep epname ext)],
 		test => [
-			['S01E02.Episode_name.avi', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.S01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/S01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/S01E02/Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.S01E02a.Episode_name.avi', 'Series Name', 1, 2, undef, undef, 'a', 'Episode_name', 'avi'],
-			['Series Name.S01E02p4.Episode_name.avi', 'Series Name', 1, 2, undef, 4, undef, 'Episode_name', 'avi'],
-			['Series Name.S01E02-03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.S01E02-E03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.S01E02E.03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/S01E02E03/Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['S01E02E03/Episode name.avi', undef, 1, 2, 3, undef, undef, 'Episode name', 'avi'],
-			['Series Name.Season_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.Season_V.Episode_XI.Episode_name.avi', 'Series Name', 5, 11, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.Season_V.Episode_XI.Part.XXV.Episode_name.avi', 'Series Name', 5, 11, undef, 25, undef, 'Episode_name', 'avi'],
-			['Series Name.Se01.Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/Season_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/Season_01/Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/S.I/Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['S01E02.Episode_name.avi', undef, undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.S01E02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/S01E02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/S01E02/Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series/Name/S01E02/Episode_name.avi', 'Name', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.S01E02a.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, 'a', 'Episode_name', 'avi'],
+			['Series Name.S01E02p4.Episode_name.avi', 'Series Name', undef, 1, 2, undef, 4, undef, 'Episode_name', 'avi'],
+			['Series Name.S01E02-03.Episode_name.avi', 'Series Name', undef, 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.S01E02-E03.Episode_name.avi', 'Series Name', undef, 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.S01E02E.03.Episode_name.avi', 'Series Name', undef, 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/S01E02E03/Episode_name.avi', 'Series Name', undef, 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['S01E02E03/Episode name.avi', undef, undef, 1, 2, 3, undef, undef, 'Episode name', 'avi'],
+			['Series Name.Season_01.Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.Season_V.Episode_XI.Episode_name.avi', 'Series Name', undef, 5, 11, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.Season_V.Episode_XI.Part.XXV.Episode_name.avi', 'Series Name', undef, 5, 11, undef, 25, undef, 'Episode_name', 'avi'],
+			['Series Name.Se01.Ep02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/Season_01.Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/Season_01/Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/S.I/Ep02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/S.one/Ep twelve.Episode_name.avi', 'Series Name', undef, 1, 12, undef, undef, undef, 'Episode_name', 'avi'],
 		],
 	},
-	{
+	{ # Movie IMDB Support
+		# Perl > v5.10
+		re => '^(?<movie>.*?)?(?:[\/\s._-]*(?<openb>\[)?(?<year>(?:19|20)\d{2})(?(<openb>)\]))?(?:[\/\s._-]*(?<openc>\[)?(?:(?:imdb|tt)[\s._-]*)*(?<imdb>\d{7})(?(<openc>)\]))(?:[\s._-]*(?<title>[^\/]+?))?$',
+
+		# Perl < v5.10
+		re_compat => '^(.*?)?(?:[\/\s._-]*\[?((?:19|20)\d{2})\]?)?(?:[\/\s._-]*\[?(?:(?:imdb|tt)[\s._-]*)*(\d{7})\]?)(?:[\s._-]*([^\/]+?))?$',
+		keys_compat => [qw(movie year imdb title)],
+
+		test_keys => [qw(filename movie guess-movie year imdb title ext)],
+		test => [
+			['Movie Name [1996] [imdb 1234567].mkv', 'Movie Name', undef, 1996, 1234567, undef, 'mkv'],
+			['Movie Name [1996] [imdb tt1234567].mkv', 'Movie Name', undef, 1996, 1234567, undef, 'mkv'],
+			['Movie Name [1996] [1234567].avi', 'Movie Name', undef, 1996, 1234567, undef, 'avi'],
+			['Movie Name [1996] [tt1234567] foo.avi', 'Movie Name', undef, 1996, 1234567, 'foo', 'avi'],
+			['Movie Name [1996]/tt1234567-foo.avi', 'Movie Name', undef, 1996, 1234567, 'foo', 'avi'],
+			['Movie/Name/tt1234567_foo.avi', 'Name', 'Movie Name', undef, 1234567, 'foo', 'avi'],
+			['Movie Name.[tt0096657] bar.avi', 'Movie Name', undef, undef, '0096657', 'bar', 'avi'],
+			['Movie Name.tt0096657-foo.avi', 'Movie Name', undef, undef, '0096657', 'foo', 'avi'],
+			['Movie.Name.tt0096657foo.avi', 'Movie.Name', undef, undef, '0096657', 'foo', 'avi'],
+			['Movie Name.tt0096657_foo.avi', 'Movie Name', undef, undef, '0096657', 'foo', 'avi'],
+			['Movie Name.tt0096657.avi', 'Movie Name', undef, undef, '0096657', undef, 'avi'],
+			['Movie Name.[0096657].avi', 'Movie Name', undef, undef, '0096657', undef, 'avi'],
+			['imdb-tt0096657.avi', undef, undef, undef, '0096657', undef, 'avi'],
+			['tt0096657.mov', undef, undef, undef, '0096657', undef, 'mov'],
+			['tt0096857', undef, undef, undef, '0096857', undef, undef],
+			['1234576', undef, undef, undef, '1234576', undef, undef],
+		],
+		#warning => 'Found year instead of season+episode',
+	},
+	{ # Movie + Year Support
 		# Perl > v5.10
 		re => '^(?:(?<movie>.*?)[\/\s._-]*)?(?<openb>\[)?(?<year>(?:19|20)\d{2})(?(<openb>)\])(?:[\s._-]*(?<title>[^\/]+?))?$',
 
@@ -55,14 +118,15 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?\[?((?:19|20)\d{2})\]?(?:[\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(movie year title)],
 
+		test_keys => [qw(filename movie year title ext)],
 		test => [
-			['Movie.[1987].avi', 'Movie', undef, 1987, undef, undef, undef, undef, 'avi'],
-			['Movie.2000.title.avi', 'Movie', undef, 2000, undef, undef, undef, 'title', 'avi'],
-			['Movie/2009.title.avi', 'Movie', undef, 2009, undef, undef, undef, 'title', 'avi'],
+			['Movie.[1988].avi', 'Movie', 1988, undef, 'avi'],
+			['Movie.2000.title.avi', 'Movie', 2000, 'title', 'avi'],
+			['Movie/2009.title.avi', 'Movie', 2009, 'title', 'avi'],
 		],
 		#warning => 'Found year instead of season+episode',
 	},
-	{
+	{ # TV Show Support - see
 		# Perl > v5.10
 		re => '^(?:(?<name>.*?)[\/\s._-]*)?(?<season>\d{1,2}?)(?<episode>\d{2})(?:[\s._-]*(?<epname>.+?))?$',
 
@@ -70,13 +134,14 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?(\d{1,2}?)(\d{2})(?:[\s._-]*(.+?))?$',
 		keys_compat => [qw(name season episode epname)],
 
+		test_keys => [qw(filename name season episode epname ext)],
 		test => [
-			['SN102.Episode_name.avi', 'SN', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.102.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/102.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['SN102.Episode_name.avi', 'SN', 1, 2, 'Episode_name', 'avi'],
+			['Series Name.102.Episode_name.avi', 'Series Name', 1, 2, 'Episode_name', 'avi'],
+			['Series Name/102.Episode_name.avi', 'Series Name', 1, 2, 'Episode_name', 'avi'],
 		],
 	},
-	{
+	{ # TV Show Support - sxee
 		# Perl > v5.10
 		re => '^(?:(?<name>.*?)[\/\s._-]*)?(?<openb>\[)?(?<season>\d{1,2})[x\/](?<episode>\d{1,2})(?:-(?:\k<season>x)?(?<endep>\d{1,2}))?(?(<openb>)\])(?:[\s._-]*(?<epname>[^\/]+?))?$',
 
@@ -84,15 +149,16 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?\[?(\d{1,2})[x\/](\d{1,2})(?:-(?:\d{1,2}x)?(\d{1,2}))?\]?(?:[\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season episode endep epname)],
 
+		test_keys => [qw(filename name season episode endep epname ext)],
 		test => [
-			['Series Name.1x02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/1x02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.[1x02].Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.1x02-03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.1x02-1x03.Episode_name.avi', 'Series Name', 1, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.1x02.Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
+			['Series Name/1x02.Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
+			['Series Name.[1x02].Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
+			['Series Name.1x02-03.Episode_name.avi', 'Series Name', 1, 2, 3, 'Episode_name', 'avi'],
+			['Series Name.1x02-1x03.Episode_name.avi', 'Series Name', 1, 2, 3, 'Episode_name', 'avi'],
 		],
 	},
-	{
+	{ # TV Show Support - season only
 		# Perl > v5.10
 		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:s|se|season|series)[\s._]?(?<season>\d{1,2})(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
 
@@ -100,15 +166,17 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:s|se|season|series)[\s._]?(\d{1,2})(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season epname)],
 
+		test_keys => [qw(filename name season epname ext)],
 		test => [
-			['Series Name.s1.Episode_name.avi', 'Series Name', 1, undef, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.s01.Episode_name.avi', 'Series Name', 1, undef, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/se01.Episode_name.avi', 'Series Name', 1, undef, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.season_1.Episode_name.avi', 'Series Name', 1, undef, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/season_1/Episode_name.avi', 'Series Name', 1, undef, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.s1.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
+			['Series Name.s01.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
+			['Series Name/se01.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
+			['Series Name.season_1.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
+			['Series Name/season_1/Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
+			['Series Name/season ten/Episode_name.avi', 'Series Name', 10, 'Episode_name', 'avi'],
 		],
 	},
-	{
+	{ # TV Show Support - episode only
 		# Perl > v5.10
 		re => '^(?:(?<name>.*?)[\/\s._-]*)?(?:(?:e|ep|episode)[\s._]?)?(?<episode>\d{1,2})(?:-(?:e|ep)?(?<endep>\d{1,2}))?(?:(?:p|part)(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
 
@@ -116,24 +184,25 @@ $VERSION = "0.32";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?(?:(?:e|ep|episode)[\s._]?)?(\d{1,2})(?:-(?:e|ep)?(\d{1,2}))?(?:(?:p|part)(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name episode endep part subep epname)],
 
+		test_keys => [qw(filename name episode endep part subep epname ext)],
 		test => [
-			['Series Name.Episode_02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/Episode_02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/Ep02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['E02.Episode_name.avi', undef, undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.E02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.02.Episode_name.avi', 'Series Nam', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/E02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/02.Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/E02/Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name/02/Episode_name.avi', 'Series Name', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.E02a.Episode_name.avi', 'Series Name', undef, 2, undef, undef, 'a', 'Episode_name', 'avi'],
-			['Series Name.E02p3.Episode_name.avi', 'Series Name', undef, 2, undef, 3, undef, 'Episode_name', 'avi'],
-			['Series Name.E02-03.Episode_name.avi', 'Series Name', undef, 2, 3, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.E02-E03.Episode_name.avi', 'Series Name', undef, 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.Episode_02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/Episode_02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/Ep02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['E02.Episode_name.avi', undef, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.E02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.02.Episode_name.avi', 'Series Nam', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/E02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/E02/Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/02/Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.E02a.Episode_name.avi', 'Series Name', 2, undef, undef, 'a', 'Episode_name', 'avi'],
+			['Series Name.E02p3.Episode_name.avi', 'Series Name', 2, undef, 3, undef, 'Episode_name', 'avi'],
+			['Series Name.E02-03.Episode_name.avi', 'Series Name', 2, 3, undef, undef, 'Episode_name', 'avi'],
+			['Series Name.E02-E03.Episode_name.avi', 'Series Name', 2, 3, undef, undef, 'Episode_name', 'avi'],
 		],
 	},
-	{
+	{ # Default Movie Support
 		# Perl > v5.10
 		re => '^(?<movie>.*)$',
 
@@ -141,13 +210,14 @@ $VERSION = "0.32";
 		re_compat => '^(.*)$',
 		keys_compat => [qw(movie)],
 
+		test_keys => [qw(filename movie ext)],
 		test => [
-			['Movie.mov', 'Movie', undef, undef, undef, undef, undef, undef, 'mov'],
+			['Movie.mov', 'Movie', 'mov'],
 		],
 		#warning => 'Found year instead of season+episode',
 	},
 );
-	
+
 ###############################################################################
 sub new {
 	my $self = bless {};
@@ -155,20 +225,17 @@ sub new {
 	&debug(5, "VideoFilename: $self->{file}\n");
 
 	my $file = $self->{file};
-	#print "FILE: $file\n";
 	$self->{dir} = $1 if $file =~ m|^(.*/)|;
 	$self->{ext} = lc $1 if $file =~ s/\.([0-9a-z]+)$//i;
-	if ($] >= 5.010000) {
-		$file =~ s/(?:day|s|se|season|e|ep|episode|part)[\s._-]+\K([LX]*[XI]*[VI]+)\b/&roman2int($1)/ieg;
-	} else {
-		$file =~ s/((?:day|s|se|season|e|ep|episode|part)[\s._-]+)([LX]*[XI]*[VI]+)\b/"$1".&roman2int($2)/ieg;
-	}
-	#print "FILE: $file\n";
+
+	# Translate appropriate roman/english numbers to numerals
+	my $prefix = '(?:day|d|dvd|disc|disk|s|se|season|e|ep|episode|part)[\s._-]+';
+	$file = &_allroman2int($file, $prefix);
+	$file = &_allnum2int($file, $prefix);
 
 	# Episode
 	$self->{endep} = $1 if $self->{episode} =~ s/-(\d+)//i;
 	$self->{subep} = $1 if $self->{episode} =~ s/([a-z])$//i;
-	#print "Episode: $self->{episode}-$self->{endep}-$self->{subep}\n";
 
 	# Parse filename
 	for my $pat (@filePatterns) {
@@ -199,21 +266,24 @@ sub new {
 		}
 	}
 
-	# Movie support for test cases
-	if ($self->{name} || $self->{season} || $self->{episode}) {
+	# Perhaps a movie is really a name with default season or episode
+	if (($self->{name} || $self->{season} || $self->{episode}) && $self->{movie}) {
 		$self->{name} = $self->{movie} unless $self->{name};
 		delete $self->{movie};
-	} else {
-		$self->{name} = $self->{movie} if $self->{movie};
-		$self->{episode} = $self->{year} if $self->{year};
-		$self->{epname} = $self->{title} if $self->{title};
 	}
 
-	# Process Series
-	if ($self->{name}) {
-		$self->{name} =~ s|^.*/||;				# Get rid of any directory parts
-		$self->{name} =~ s/^\s*(.+?)\s*$/$1/;	# Remove leading/trailing separators
-		$self->{movie} = $self->{name} if $self->{movie};
+	# Process Series/Movie
+	for my $key (qw(name movie)) {
+		if ($self->{$key}) {
+			if ($self->{$key} =~ /^.*\/(.*?)$/) {
+				# Get rid of any directory parts
+				$self->{"guess-$key"} = $self->{$key};
+				# Keep the original name without '/' just in case the name contains a subdir
+				$self->{$key} = $1;
+				$self->{"guess-$key"} =~ s/[\/\s._-]+/ /;
+			}
+			$self->{$key} =~ s/^\s*(.+?)\s*$/$1/;	# Remove leading/trailing separators
+		}
 	}
 
 	# Guess part from epname
@@ -230,14 +300,17 @@ sub new {
 	}
 
 	# Cosmetics
-	$self->{season} =~ s/^0+//;
-	$self->{episode} =~ s/^0+//;
-	$self->{endep} =~ s/^0+//;
-	$self->{part} =~ s/^0+//;
+	for my $key (qw(dvd season episode endep part)) {
+		$self->{$key} =~ s/^0+// if $self->{$key};
+	}
 	$self->{endep} = undef if $self->{endep} == $self->{episode};
 
 	# Convenience for some developpers
-	$self->{seasonepisode} = sprintf("S%02dE%02d", $self->{season}, $self->{episode});
+	if ($self->{season}) {
+		$self->{seasonepisode} = sprintf("S%02dE%02d", $self->{season}, $self->{episode});
+	} elsif ($self->{dvd}) {
+		$self->{seasonepisode} = sprintf("D%02dE%02d", $self->{dvd}, $self->{episode});
+	}
 
 	&debug(2, '', VideoFilename=>$self);
 	return $self;
@@ -277,13 +350,29 @@ sub _num2int {
 	return $sum;
 }
 sub _allnum2int {
-	my $str = shift;
+	my ($str, $prefix) = @_;
 
-	my $single = "zero|one|two|three|five|(?:twen|thir|four|fif|six|seven|nine)(?:|teen|ty)|eight(?:|een|y)|ten|eleven|twelve";
-	my $mult = "hundred|thousand|(?:m|b|tr)illion";
-	my $sep = "\\s|,|and|&";
+	my $single = 'zero|one|two|three|five|(?:twen|thir|four|fif|six|seven|nine)(?:|teen|ty)|eight(?:|een|y)|ten|eleven|twelve';
+	my $mult = 'hundred|thousand|(?:m|b|tr)illion';
+	my $sep = '\s|,|and|&';
 
-	$str =~ s/\b((?:(?:$single|$mult)(?:$single|$mult|$sep)+)?(?:$single|$mult))\b/&_num2int($1)/egis;
+	if ($] >= 5.010000) {
+		$str =~ s/$prefix\K\b((?:(?:$single|$mult)(?:$single|$mult|$sep)+)?(?:$single|$mult))\b/&_num2int($1)/egis;
+	} else {
+		$str =~ s/($prefix)\b((?:(?:$single|$mult)(?:$single|$mult|$sep)+)?(?:$single|$mult))\b/"$1".&_num2int($2)/egis;
+	}
+
+	return $str;
+}
+sub _allroman2int {
+	my ($str, $prefix) = @_;
+
+	my $roman = '[MC]*[DC]*[CX]*[LX]*[XI]*[VI]*';
+	if ($] >= 5.010000) {
+		$str =~ s/$prefix\K($roman)\b/roman2int($1)/ieg;
+	} else {
+		$str =~ s/($prefix)($roman)\b/"$1".roman2int($2)/ieg;
+	}
 	return $str;
 }
 
@@ -305,22 +394,24 @@ sub testVideoFilename {
 	for my $pat (@filePatterns) {
 		for my $test (@{$pat->{test}}) {
 			my $file = new($test->[0]);
-			#print "FILE: ".join(",",@$file{qw(name season episode endep part subep epname ext)})."\n";
-			#print "TEST: ".join(",",@$test[1..8])."\n";
-			if ($file->{name} eq $test->[1]
-				&& $file->{season} eq $test->[2]
-				&& $file->{episode} eq $test->[3]
-				&& $file->{endep} eq $test->[4]
-				&& $file->{part} eq $test->[5]
-				&& $file->{subep} eq $test->[6]
-				&& $file->{epname} eq $test->[7]
-				&& $file->{ext} eq $test->[8]
-			) {
-				print GREEN "PASSED: $file->{file}\n";
-			} else {
-				print RED "FAILED: $file->{file}\n";
+			# Make the correct rule fired
+			if ($file->{regex} ne $pat->{re}) {
+				print RED "PATT RE: $pat->{re}\nFILE RE: $file->{regex}\n";
+				print RED "FAILED: $file->{file} (wrong rule)\n";
 				print Dumper($file); exit;
 			}
+			# Make sure all the attributes were correctly parsed
+			my $keys = $pat->{test_keys};
+			for my $i (1..8) {
+				my $attr = $file->{$keys->[$i]};
+				my $value = $test->[$i];
+				if ($attr ne $value) {
+					print RED "'$attr' ne '$value'\nFAILED: $file->{file}\n";
+					print Dumper($file); exit;
+				}
+				&verbose(1, "'$attr' eq '$value'\n");
+			}
+			print GREEN "PASSED: $file->{file}\n";
 		}
 	}
 }
