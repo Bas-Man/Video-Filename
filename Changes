@@ -1,5 +1,12 @@
 Revision history for Video::Filename
 
+0.34    2008.12.20 12:16:25
+        Optimize code so undef values aren't added to the object
+        Add passing a hashref in to new()
+        Add tests for isXXXX() functions to test harness
+        Add option to replace spaces in name/epname/movie/title
+        Add isDVDshow/isTVshow
+
 0.33    2008.12.19 16:02:43
         Add DxxExx parsing support for DVD episode numbering
         Add IMDB number partsing support

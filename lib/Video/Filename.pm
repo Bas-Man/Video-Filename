@@ -13,9 +13,9 @@ use Term::ANSIColor qw(:constants);
 use Text::Roman qw(roman2int);
 $Term::ANSIColor::AUTORESET = 1;
 
-use vars qw($VERSION @filePatterns);
+use vars qw($VERSION @filePatterns @testFuncs);
 
-$VERSION = "0.33";
+$VERSION = "0.34";
 
 @filePatterns = (
 	{ # DVD Episode Support - DddEee
@@ -26,8 +26,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name dvd episode endep part subep epname)],
 
+		test_funcs => [1, 0, 1, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name dvd episode endep part subep epname ext)],
-		test => [
+		test_files => [
 			['D01E02.Episode_name.avi', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name.D01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/D01E02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
@@ -57,8 +58,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:(?:s|se|season|series)[\s._]?)?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season episode endep part subep epname)],
 
+		test_funcs => [0, 1, 1, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name guess-name season episode endep part subep epname ext)],
-		test => [
+		test_files => [
 			['S01E02.Episode_name.avi', undef, undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name.S01E02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/S01E02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
@@ -89,8 +91,9 @@ $VERSION = "0.33";
 		re_compat => '^(.*?)?(?:[\/\s._-]*\[?((?:19|20)\d{2})\]?)?(?:[\/\s._-]*\[?(?:(?:imdb|tt)[\s._-]*)*(\d{7})\]?)(?:[\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(movie year imdb title)],
 
+		test_funcs => [0, 0, 0, 1], # DVD TV Episode Movie
 		test_keys => [qw(filename movie guess-movie year imdb title ext)],
-		test => [
+		test_files => [
 			['Movie Name [1996] [imdb 1234567].mkv', 'Movie Name', undef, 1996, 1234567, undef, 'mkv'],
 			['Movie Name [1996] [imdb tt1234567].mkv', 'Movie Name', undef, 1996, 1234567, undef, 'mkv'],
 			['Movie Name [1996] [1234567].avi', 'Movie Name', undef, 1996, 1234567, undef, 'avi'],
@@ -118,8 +121,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?\[?((?:19|20)\d{2})\]?(?:[\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(movie year title)],
 
+		test_funcs => [0, 0, 0, 1], # DVD TV Episode Movie
 		test_keys => [qw(filename movie year title ext)],
-		test => [
+		test_files => [
 			['Movie.[1988].avi', 'Movie', 1988, undef, 'avi'],
 			['Movie.2000.title.avi', 'Movie', 2000, 'title', 'avi'],
 			['Movie/2009.title.avi', 'Movie', 2009, 'title', 'avi'],
@@ -134,8 +138,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?(\d{1,2}?)(\d{2})(?:[\s._-]*(.+?))?$',
 		keys_compat => [qw(name season episode epname)],
 
+		test_funcs => [0, 1, 1, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name season episode epname ext)],
-		test => [
+		test_files => [
 			['SN102.Episode_name.avi', 'SN', 1, 2, 'Episode_name', 'avi'],
 			['Series Name.102.Episode_name.avi', 'Series Name', 1, 2, 'Episode_name', 'avi'],
 			['Series Name/102.Episode_name.avi', 'Series Name', 1, 2, 'Episode_name', 'avi'],
@@ -149,8 +154,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?\[?(\d{1,2})[x\/](\d{1,2})(?:-(?:\d{1,2}x)?(\d{1,2}))?\]?(?:[\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season episode endep epname)],
 
+		test_funcs => [0, 1, 1, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name season episode endep epname ext)],
-		test => [
+		test_files => [
 			['Series Name.1x02.Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
 			['Series Name/1x02.Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
 			['Series Name.[1x02].Episode_name.avi', 'Series Name', 1, 2, undef, 'Episode_name', 'avi'],
@@ -166,8 +172,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:s|se|season|series)[\s._]?(\d{1,2})(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season epname)],
 
+		test_funcs => [0, 0, 0, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name season epname ext)],
-		test => [
+		test_files => [
 			['Series Name.s1.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
 			['Series Name.s01.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
 			['Series Name/se01.Episode_name.avi', 'Series Name', 1, 'Episode_name', 'avi'],
@@ -184,8 +191,9 @@ $VERSION = "0.33";
 		re_compat => '^(?:(.*?)[\/\s._-]*)?(?:(?:e|ep|episode)[\s._]?)?(\d{1,2})(?:-(?:e|ep)?(\d{1,2}))?(?:(?:p|part)(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name episode endep part subep epname)],
 
+		test_funcs => [0, 0, 1, 0], # DVD TV Episode Movie
 		test_keys => [qw(filename name episode endep part subep epname ext)],
-		test => [
+		test_files => [
 			['Series Name.Episode_02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Episode_02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Ep02.Episode_name.avi', 'Series Name', 2, undef, undef, undef, 'Episode_name', 'avi'],
@@ -210,8 +218,9 @@ $VERSION = "0.33";
 		re_compat => '^(.*)$',
 		keys_compat => [qw(movie)],
 
+		test_funcs => [0, 0, 0, 1], # DVD TV Episode Movie
 		test_keys => [qw(filename movie ext)],
-		test => [
+		test_files => [
 			['Movie.mov', 'Movie', 'mov'],
 		],
 		#warning => 'Found year instead of season+episode',
@@ -221,9 +230,26 @@ $VERSION = "0.33";
 ###############################################################################
 sub new {
 	my $self = bless {};
-	@$self{qw(file name season episode part)} = @_;
+	# Read default values
+	for my $key (qw(file name season episode part options)) {
+		last unless defined $_[0];
+		if (ref $_[0]) {
+			# Use a hashref for values
+			while (my ($key, $value) = each %{$_[0]}) {
+				$self->{$key} = $value;
+			}
+		} else {
+			$self->{$key} = shift;
+		}
+	}
+	# Seed endep/subep from passed in episode
+	if (defined $self->{episode}) {
+		$self->{endep} = $1 if $self->{episode} =~ s/-(\d+)//i;
+		$self->{subep} = $1 if $self->{episode} =~ s/([a-z])$//i;
+	}
 	&debug(5, "VideoFilename: $self->{file}\n");
 
+	# Start parsing file
 	my $file = $self->{file};
 	$self->{dir} = $1 if $file =~ m|^(.*/)|;
 	$self->{ext} = lc $1 if $file =~ s/\.([0-9a-z]+)$//i;
@@ -233,19 +259,15 @@ sub new {
 	$file = &_allroman2int($file, $prefix);
 	$file = &_allnum2int($file, $prefix);
 
-	# Episode
-	$self->{endep} = $1 if $self->{episode} =~ s/-(\d+)//i;
-	$self->{subep} = $1 if $self->{episode} =~ s/([a-z])$//i;
-
-	# Parse filename
+	# Run pre-processed filename through list of patterns
 	for my $pat (@filePatterns) {
 		if ($] >= 5.010000) {
 			if ($file =~ /$pat->{re}/i) {
 				&warning($pat->{warning}) if defined $pat->{warning};
 				&debug(3, "PARSEINFO: $pat->{re}\n");
 				$self->{regex} = $pat->{re};
-				while (my ($key, $data) = each (%-)) {
-					$self->{$key} = $data->[0] unless defined $self->{$key};
+				while (my ($key, $data) = each %-) {
+					$self->{$key} = $data->[0] if defined $data->[0] && !defined $self->{$key};
 				}
 				last;
 			}
@@ -267,14 +289,14 @@ sub new {
 	}
 
 	# Perhaps a movie is really a name with default season or episode
-	if (($self->{name} || $self->{season} || $self->{episode}) && $self->{movie}) {
-		$self->{name} = $self->{movie} unless $self->{name};
+	if ((defined $self->{name} || defined $self->{season} || defined $self->{episode}) && defined $self->{movie}) {
+		$self->{name} = $self->{movie} unless defined $self->{name};
 		delete $self->{movie};
 	}
 
 	# Process Series/Movie
-	for my $key (qw(name movie)) {
-		if ($self->{$key}) {
+	for my $key (qw(name movie epname title)) {
+		if (defined $self->{$key}) {
 			if ($self->{$key} =~ /^.*\/(.*?)$/) {
 				# Get rid of any directory parts
 				$self->{"guess-$key"} = $self->{$key};
@@ -282,12 +304,13 @@ sub new {
 				$self->{$key} = $1;
 				$self->{"guess-$key"} =~ s/[\/\s._-]+/ /;
 			}
+			$self->{$key} =~ s/[$self->{spaces}]+/ /g if defined $self->{spaces};
 			$self->{$key} =~ s/^\s*(.+?)\s*$/$1/;	# Remove leading/trailing separators
 		}
 	}
 
 	# Guess part from epname
-	if ($self->{epname} && !$self->{part}) {
+	if (defined $self->{epname} && !defined $self->{part}) {
 		my $rmpart = 'Episode|Part|PT';			 	# Remove "Part #" from episode name
 		my $epname = &_allnum2int($self->{epname});	# Make letters into integers
 		if ($epname =~ /(?:$rmpart) (\d+)/i
@@ -301,14 +324,14 @@ sub new {
 
 	# Cosmetics
 	for my $key (qw(dvd season episode endep part)) {
-		$self->{$key} =~ s/^0+// if $self->{$key};
+		$self->{$key} =~ s/^0+// if defined $self->{$key};
 	}
 	$self->{endep} = undef if $self->{endep} == $self->{episode};
 
 	# Convenience for some developpers
-	if ($self->{season}) {
+	if (defined $self->{season}) {
 		$self->{seasonepisode} = sprintf("S%02dE%02d", $self->{season}, $self->{episode});
-	} elsif ($self->{dvd}) {
+	} elsif (defined $self->{dvd}) {
 		$self->{seasonepisode} = sprintf("D%02dE%02d", $self->{dvd}, $self->{episode});
 	}
 
@@ -377,22 +400,34 @@ sub _allroman2int {
 }
 
 ###############################################################################
+sub isDVDshow {
+	my ($self) = @_;
+	return defined $self->{dvd} && defined $self->{episode};
+}
+
+###############################################################################
+sub isTVshow {
+	my ($self) = @_;
+	return defined $self->{season} && defined $self->{episode};
+}
+
+###############################################################################
 sub isEpisode {
 	my ($self) = @_;
-	return $self->{name} && defined $self->{season} && defined $self->{episode};
+	return defined $self->{episode};
 }
 
 ###############################################################################
 sub isMovie {
 	my ($self) = @_;
-	return $self->{movie} && $self->{year};
+	return defined $self->{movie} || defined $self->{imdb};
 }
-
 
 ###############################################################################
 sub testVideoFilename {
+	my @funcs = qw(isDVDshow isTVshow isEpisode isMovie);
 	for my $pat (@filePatterns) {
-		for my $test (@{$pat->{test}}) {
+		for my $test (@{$pat->{test_files}}) {
 			my $file = new($test->[0]);
 			# Make the correct rule fired
 			if ($file->{regex} ne $pat->{re}) {
@@ -411,6 +446,13 @@ sub testVideoFilename {
 				}
 				&verbose(1, "'$attr' eq '$value'\n");
 			}
+			# Make sure all the isXXXX() functions work properly
+			for my $i (0..$#funcs) {
+				unless (eval "\$file->$funcs[$i]()" == $pat->{test_funcs}->[$i]) {
+					print RED "\$file->$funcs[$i]() != $pat->{test_funcs}->[$i]\nFAILED: $file->{file}\n";
+					print Dumper($file); exit;
+				}
+			}
 			print GREEN "PASSED: $file->{file}\n";
 		}
 	}
@@ -427,13 +469,19 @@ Video::Filename - Parse filenames for information about the video
 
   use Video::Filename;
 
-  my $file = Video::Filename::new($filename, [$series, [$season, [$episode]]]);
-
-  # TV Episode
+  my $file = Video::Filename::new($filename, [$name, [$season, [$episode]]]);
+  my $file = Video::Filename::new($filename, {
+                                     name => 'series name',
+                                     season => 4,
+                                     episode => 5,
+                                     spaces => '\s._-',
+                                 } );
+  # TV or DVD Episode
   $file->{regex}
   $file->{dir}
   $file->{file}
-  $file->{series}
+  $file->{name}
+  $file->{dvd}
   $file->{season}
   $file->{episode}
   $file->{endep}
@@ -445,10 +493,14 @@ Video::Filename - Parse filenames for information about the video
   # Movie
   $file->{movie}
   $file->{year}
+  $file->{imdb}
   $file->{title}
 
+  $file->isDVDshow();
+  $file->isTVshow();
   $file->isEpisode();
   $file->isMovie();
+
   $file->testVideoFilename();
 
 =head1 DESCRIPTION
@@ -459,15 +511,47 @@ from a tv episode.
 
 =over 4
 
-=item $file = Video::Filename::new(FILENAME, [SERIES_NAME, [SEASON, [EPISODE]]]);
+=item $file = Video::Filename::new(FILENAME, [NAME, [SEASON, [EPISODE]]]);
 
 Parse C<FILENAME> and return a Video::Filename object containing the data. If
-you specify C<SERIES_NAME>, C<SEASON>, and/or C<EPISODE> it will override what
-is parsed from C<FILENAME>.
+you specify C<NAME>, C<SEASON>, and/or C<EPISODE> it will override what is
+parsed from C<FILENAME>.
+
+Alternatively, arguments can be passed in a hashref.  This also allows the user
+to specify the option of specifying characters which are replaced with spaces
+in the parsed 'name', 'epname', 'movie', and 'title' fields.
+
+  my $file = Video::Filename::new('This.is.a.name.s01e01.episode_title.avi', {
+                                     season => 4,
+                                     spaces => '\s._-',
+                                 } );
+  print Dumper($file);
+
+  $file = bless( {
+                  'epname' => 'episode title',
+                  'name' => 'This is a name',
+                  'file' => 'This.is.a.name.s01e01.episode_title.avi',
+                  'spaces' => '._',
+                  'seasonepisode' => 'S04E01',
+                  'episode' => 1,
+                  'ext' => 'avi',
+                  'season' => 4
+                }, 'Video::Filename' );
+
+Notice that that the season was overridden in the call to new(), so it's "4"
+instead of the "1" parsed from the file name.
+
+=item isDVDshow();
+
+Returns true if the object represents a DVD episode.
+
+=item isTVshow();
+
+Returns true if the object represents a TV episode.
 
 =item isEpisode();
 
-Returns true if the object represents a TV episode.
+Returns true if the object represents an episode (TV or DVD).
 
 =item isMovie();
 
