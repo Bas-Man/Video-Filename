@@ -1,5 +1,9 @@
 Revision history for Video::Filename
 
+0.35    2009.01.13 16:46:05
+        Some filenames weren't parsed correctly, so regexes were fixed to do so.
+        Fix bug in _allnum2int() and _allrom2int()
+
 0.34    2008.12.20 12:16:25
         Optimize code so undef values aren't added to the object
         Add passing a hashref in to new()

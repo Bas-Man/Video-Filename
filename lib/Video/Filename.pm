@@ -15,15 +15,15 @@ $Term::ANSIColor::AUTORESET = 1;
 
 use vars qw($VERSION @filePatterns @testFuncs);
 
-$VERSION = "0.34";
+$VERSION = "0.35";
 
 @filePatterns = (
 	{ # DVD Episode Support - DddEee
 		# Perl > v5.10
-		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(?<dvd>\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(?<episode>\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
+		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(?<dvd>\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(?<episode>\d{1,2}(?:\.\d{1,2})?)(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
 
 		# Perl < v5.10
-		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
+		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:d|dvd|disc|disk)[\s._]?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}(?:\.\d{1,2})?))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name dvd episode endep part subep epname)],
 
 		test_funcs => [1, 0, 1, 0], # DVD TV Episode Movie
@@ -50,12 +50,12 @@ $VERSION = "0.34";
 			['Series Name/D three/Ep five Episode_name.avi', 'Series Name', 3, 5, undef, undef, undef, 'Episode_name', 'avi'],
 		],
 	},
-	{ # TV Show Support - SssEee
+	{ # TV Show Support - SssEee or Season_ss_Episode_ss
 		# Perl > v5.10
-		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:(?:s|se|season|series)[\s._]?)?(?<season>\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(?<episode>\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
+		re => '^(?:(?<name>.*?)[\/\s._-]+)?(?:s|se|season|series)[\s._-]?(?<season>\d{1,2})[x\/\s._-]*(?:e|ep|episode|[\/\s._-]+)[\s._-]?(?<episode>\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(?<endep>\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(?<part>\d+))?(?<subep>[a-z])?(?:[\/\s._-]*(?<epname>[^\/]+?))?$',
 
 		# Perl < v5.10
-		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:(?:s|se|season|series)[\s._]?)?(\d{1,2})[x\/\s._-]*(?:e|ep|episode)[\s._]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
+		re_compat => '^(?:(.*?)[\/\s._-]+)?(?:s|se|season|series)[\s._-]?(\d{1,2})[x\/\s._-]*(?:e|ep|episode|[\/\s._-]+)[\s._-]?(\d{1,2})(?:-?(?:(?:e|ep)[\s._]*)?(\d{1,2}))?(?:[\s._]?(?:p|part)[\s._]?(\d+))?([a-z])?(?:[\/\s._-]*([^\/]+?))?$',
 		keys_compat => [qw(name season episode endep part subep epname)],
 
 		test_funcs => [0, 1, 1, 0], # DVD TV Episode Movie
@@ -79,6 +79,7 @@ $VERSION = "0.34";
 			['Series Name.Se01.Ep02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Season_01.Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Season_01/Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
+			['Series Name/Season_01/02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/S.I/Ep02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/S.one/Ep twelve.Episode_name.avi', 'Series Name', undef, 1, 12, undef, undef, undef, 'Episode_name', 'avi'],
 		],
@@ -252,12 +253,14 @@ sub new {
 	# Start parsing file
 	my $file = $self->{file};
 	$self->{dir} = $1 if $file =~ m|^(.*/)|;
+	$self->{filename} = $1 if $file;
 	$self->{ext} = lc $1 if $file =~ s/\.([0-9a-z]+)$//i;
 
 	# Translate appropriate roman/english numbers to numerals
-	my $prefix = '(?:day|d|dvd|disc|disk|s|se|season|e|ep|episode|part)[\s._-]+';
-	$file = &_allroman2int($file, $prefix);
-	$file = &_allnum2int($file, $prefix);
+	my $prefix = '(?:d|dvd|disc|disk|s|se|season|e|ep|episode)[\s._-]+';
+	my $end = '(?:day|part)[\s._-]+';
+	$file = &_allroman2int($file, $prefix, $end);
+	$file = &_allnum2int($file, $prefix, $end);
 
 	# Run pre-processed filename through list of patterns
 	for my $pat (@filePatterns) {
@@ -332,7 +335,7 @@ sub new {
 	if (defined $self->{season}) {
 		$self->{seasonepisode} = sprintf("S%02dE%02d", $self->{season}, $self->{episode});
 	} elsif (defined $self->{dvd}) {
-		$self->{seasonepisode} = sprintf("D%02dE%02d", $self->{dvd}, $self->{episode});
+		$self->{seasonepisode} = sprintf("D%02dE%02.1f", $self->{dvd}, $self->{episode});
 	}
 
 	&debug(2, '', VideoFilename=>$self);
@@ -373,28 +376,32 @@ sub _num2int {
 	return $sum;
 }
 sub _allnum2int {
-	my ($str, $prefix) = @_;
+	my ($str, $prefix, $end) = @_;
 
 	my $single = 'zero|one|two|three|five|(?:twen|thir|four|fif|six|seven|nine)(?:|teen|ty)|eight(?:|een|y)|ten|eleven|twelve';
 	my $mult = 'hundred|thousand|(?:m|b|tr)illion';
-	my $sep = '\s|,|and|&';
+	my $regex = "((?:(?:$single|$mult)(?:$single|$mult|\s|,|and|&)+)?(?:$single|$mult))";
 
 	if ($] >= 5.010000) {
-		$str =~ s/$prefix\K\b((?:(?:$single|$mult)(?:$single|$mult|$sep)+)?(?:$single|$mult))\b/&_num2int($1)/egis;
+		$str =~ s/$prefix\K\b$regex\b/&_num2int($1)/egis;
+		$str =~ s/$end\K\b$regex$/&_num2int($1)/egis if defined $end;
 	} else {
-		$str =~ s/($prefix)\b((?:(?:$single|$mult)(?:$single|$mult|$sep)+)?(?:$single|$mult))\b/"$1".&_num2int($2)/egis;
+		$str =~ s/($prefix)\b$regex\b/"$1".&_num2int($2)/egis;
+		$str =~ s/($end)\b$regex$/"$1".&_num2int($2)/egis if defined $end;
 	}
 
 	return $str;
 }
 sub _allroman2int {
-	my ($str, $prefix) = @_;
+	my ($str, $prefix, $end) = @_;
 
 	my $roman = '[MC]*[DC]*[CX]*[LX]*[XI]*[VI]*';
 	if ($] >= 5.010000) {
-		$str =~ s/$prefix\K($roman)\b/roman2int($1)/ieg;
+		$str =~ s/\b$prefix\K($roman)\b/roman2int($1)/egi;
+		$str =~ s/\b$end\K($roman)$/roman2int($1)/egi if defined $end;
 	} else {
-		$str =~ s/($prefix)($roman)\b/"$1".roman2int($2)/ieg;
+		$str =~ s/\b($prefix)($roman)\b/"$1".roman2int($2)/egi;
+		$str =~ s/\b($end)($roman)$/"$1".roman2int($2)/egi if defined $end;
 	}
 	return $str;
 }
