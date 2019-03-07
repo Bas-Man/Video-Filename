@@ -15,7 +15,7 @@ $Term::ANSIColor::AUTORESET = 1;
 
 use vars qw($VERSION @filePatterns @testFuncs);
 
-$VERSION = "0.35";
+$VERSION = "0.36";
 
 @filePatterns = (
 	{ # DVD Episode Support - DddEee
@@ -42,12 +42,29 @@ $VERSION = "0.35";
 			['D01E02E03/Episode name.avi', undef, 1, 2, 3, undef, undef, 'Episode name', 'avi'],
 			['Series Name.DVD_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name.disk_V.Episode_XI.Episode_name.avi', 'Series Name', 5, 11, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.disc_V.Episode_XI.Part.XXV.Episode_name.avi', 'Series Name', 5, 11, undef, 25, undef, 'Episode_name', 'avi'],
 			['Series Name.DVD01.Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/dvd_01.Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/disk_01/Episode_02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/D.I/Ep02.Episode_name.avi', 'Series Name', 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/D three/Ep five Episode_name.avi', 'Series Name', 3, 5, undef, undef, undef, 'Episode_name', 'avi'],
+		],
+	},
+	{ # TV Show Support -	By Date no Season or Episode
+		# Perl > v5.10
+		re => '(?<name>.*?)[.\s](?<year>\d{4})[.\s](?<month>\d{1,2})[.\s](?<date>\d{1,2})(?:[.\s](?<epname>.*)|)$',
+
+		# Perl < v5.10
+		re_compat => '(.*?)[.\s](\d{4})[.\s](\d{1,2})[.\s](\d{1,2})(?:[.\s](.*)|)$',
+		keys_compat => [qw(filename name year month date epname ext)],
+
+		test_funcs => [0, 1, 0, 0], # DVD TV Episode Movie
+		test_keys => [qw(filename name year month date epname ext)],
+		test_files => [
+			['Series Name.2018.01.03.Episode_name.avi', 'Series Name', '2018', '01', '03', 'Episode_name', 'avi'],
+			['Series Name 2018 02 03 Episode_name.avi', 'Series Name', '2018', '02', '03', 'Episode_name', 'avi'],
+			['Series.Name.2018.03.03.Episode_name.avi', 'Series.Name', '2018', '03', '03', 'Episode_name', 'avi'],
+			['Series Name 2018 04 03.avi', 'Series Name', '2018', '04', '03', undef, 'avi'],
+			['Series.Name.2018.05.03.avi', 'Series.Name', '2018', '05', '03', undef, 'avi'],
 		],
 	},
 	{ # TV Show Support - SssEee or Season_ss_Episode_ss
@@ -75,7 +92,6 @@ $VERSION = "0.35";
 			['S01E02E03/Episode name.avi', undef, undef, 1, 2, 3, undef, undef, 'Episode name', 'avi'],
 			['Series Name.Season_01.Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name.Season_V.Episode_XI.Episode_name.avi', 'Series Name', undef, 5, 11, undef, undef, undef, 'Episode_name', 'avi'],
-			['Series Name.Season_V.Episode_XI.Part.XXV.Episode_name.avi', 'Series Name', undef, 5, 11, undef, 25, undef, 'Episode_name', 'avi'],
 			['Series Name.Se01.Ep02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Season_01.Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
 			['Series Name/Season_01/Episode_02.Episode_name.avi', 'Series Name', undef, 1, 2, undef, undef, undef, 'Episode_name', 'avi'],
@@ -415,7 +431,14 @@ sub isDVDshow {
 ###############################################################################
 sub isTVshow {
 	my ($self) = @_;
-	return defined $self->{season} && defined $self->{episode};
+
+	if (defined $self->{season} && defined $self->{episode}) {
+		return 1;
+	} elsif (defined $self->{year} && $self->{month} && $self->{date}) {
+		return 1;
+	}
+	# This is not a TVshow
+	return 0;
 }
 
 ###############################################################################

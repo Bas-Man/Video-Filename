@@ -1,4 +1,7 @@
 Revision history for Video::Filename
+0.36    2019.03.07 22:29:00
+        Added support for files named ShowName.2019.03.02.Episode_name.ext
+        Updated isTVshow to support this new format
 
 0.35    2009.01.13 16:46:05
         Some filenames weren't parsed correctly, so regexes were fixed to do so.
@@ -37,4 +40,3 @@ Revision history for Video::Filename
 
 0.30    2008.11.06 01:20:17
         First version, released on an unsuspecting world.
-
